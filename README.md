@@ -8,4 +8,4 @@ https://juniorfrontend.ir
 
 [data-forge docs](https://data-forge.github.io/data-forge-ts/interfaces/idataframe.html#withseries)
 
-![](screen.png)
+![](dataforge.png)
