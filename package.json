@@ -1,0 +1,17 @@
+{
+  "name": "init",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon -e js --watch ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "data-forge": "^1.8.17",
+    "data-forge-fs": "^0.0.9",
+    "data-forge-plot": "^1.0.2",
+    "nodemon": "^2.0.12"
+  }
+}
