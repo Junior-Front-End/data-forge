@@ -1,122 +1,78 @@
-const {
-    get_oid,
-    prepareData
-} = require('./functions')
+
+const DF = require('data-forge-fs')
 
 
 
-// -----------------------------------
-//              categories
-// -----------------------------------
-var categories = prepareData("data/categories.json");
-var categories_oid = get_oid(categories);
+// ----------------------------------------------
+// step (1)
+// ----------------------------------------------
 
-// sql 
-var sqlCategories = categories
-.dropSeries('_id')
-.generateSeries({
-    id: (row, i) => i + 1
+// DF.readFileSync("data/posts-v1.0.json")      
+// .parseJSON()                         
+// .dropSeries([
+//     "post_author", 
+//     "post_date_gmt", 
+//     "post_excerpt",
+//     "comment_status",
+//     "ping_status",
+//     "post_password",
+//     "post_name",
+//     "to_ping",
+//     "pinged",
+//     "post_modified",
+//     "post_modified_gmt",
+//     "post_content_filtered",
+//     "menu_order",
+//     "comment_count"
+// ])             
+// // .where(row => predicate(row))   
+// // .select(row => transform(row))       
+// .asJSON()                             
+// .writeFileSync("dataSQL/posts-v1.1.json");       
+
+
+// ----------------------------------------------
+// step (2)
+// ----------------------------------------------
+
+// DF.readFileSync("data/posts-v1.5-posts.json")      
+// .parseJSON()                
+// .where(row => {
+//     return row["post_status"] !== "publish"
+// })   
+// // .select(row => transform(row))       
+// .asJSON()                             
+// .writeFileSync("dataSQL/posts-v1.6.json");      
+
+
+
+
+
+// ----------------------------------------------
+// step (3)
+// ----------------------------------------------
+
+//
+var attachments = DF.readFileSync("data/posts-v1.7-attachments.json").parseJSON()                         
+var posts = DF.readFileSync("data/posts-v1.6-posts.json").parseJSON()        
+
+
+function getIMG(id) {
+    return attachments.where(row => row["post_parent"] == id).toArray()
+} 
+
+// 
+posts.generateSeries((row, i) => {
+
+    let list = getIMG(row["ID"])
+
+    return ({
+        ...row,
+        img: list.length > 0  ? list[0]['guid'] : ""
+    })
 })
-.asJSON()
-.writeFileSync('dataSQL/categories.json');
-
-// -----------------------------------
-//              courses
-// -----------------------------------
-var courses = prepareData("data/courses.json");
-var courses_oid = get_oid(courses);
-
-// sql 
-var sqlCourses = courses
-.dropSeries('_id')
-.generateSeries({
-
-    id: (row, i) => i + 1,
-
-    categoryID: (row, i) => {
-        let [x] = Object.values(row.category)
-        let categoryID = categories_oid.findIndex(oid => oid == x) + 1
-        return categoryID
-    }
-
-})
-.dropSeries('category') 
-.asJSON()
-.writeFileSync('dataSQL/courses.json');
+.asJSON()                             
+.writeFileSync("dataSQL/posts-v1.8.json");       
 
 
-// -----------------------------------
-//              folders
-// -----------------------------------
-var folders = prepareData("data/folders.json");
-var folders_oid = get_oid(folders);
-
-
-// sql 
-var sqlFolders = folders
-.dropSeries('_id')
-.generateSeries({
-
-    id: (row, i) => i + 1,
-
-    courseID: (row, i) => {
-        let [x] = Object.values(row.course)
-        let courseID = courses_oid.findIndex(oid => oid == x) + 1
-        return courseID
-    }
-
-})
-.dropSeries('course')
-.asJSON()
-.writeFileSync('dataSQL/folders.json');
-
-// -----------------------------------
-//              articles
-// -----------------------------------
-var articles = prepareData("data/articles.json") 
-var articles_oid = get_oid(articles);
-
-// sql articles
-var sqlArticles = articles
-.dropSeries('_id')
-.generateSeries({
-
-    id: (row, i) => i + 1,
-
-    folderID: (row, i) => {
-        let [x] = Object.values(row.folder)
-        let folderID = folders_oid.findIndex(oid => oid == x) + 1
-        return folderID
-    }
-
-})
-.dropSeries('folder')
-.asJSON()
-.writeFileSync('dataSQL/articles.json');
-
-// -----------------------------------
-//              elements
-// -----------------------------------
-var elements = prepareData("data/elements.json") 
-
-// sqlElements
-var sqlElements = elements
-.dropSeries('_id')
-.generateSeries({
-    
-    id: (row, i) => i = i + 1,
-
-    articleID: (row, i) => { 
-    // oid of this row.article
-    let [x] = Object.values(row.article)  
-    // index of this row oid between articles id array (id_)
-    let articleID = articles_oid.findIndex(oid => oid == x) + 1 
-    //  
-    return articleID
-    }
-    
-})
-.dropSeries('article')
-.asJSON()
-.writeFileSync('dataSQL/elements.json');
 
