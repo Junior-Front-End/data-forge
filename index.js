@@ -7,28 +7,16 @@ const DF = require('data-forge-fs')
 // step (1)
 // ----------------------------------------------
 
-// DF.readFileSync("data/posts-v1.0.json")      
-// .parseJSON()                         
+// DF.readFileSync("data/tax.csv")      
+// .parseCSV()                         
 // .dropSeries([
-//     "post_author", 
-//     "post_date_gmt", 
-//     "post_excerpt",
-//     "comment_status",
-//     "ping_status",
-//     "post_password",
-//     "post_name",
-//     "to_ping",
-//     "pinged",
-//     "post_modified",
-//     "post_modified_gmt",
-//     "post_content_filtered",
-//     "menu_order",
-//     "comment_count"
+//     "term_taxonomy_id", "description","parent","count"
+
 // ])             
-// // .where(row => predicate(row))   
+// .where(row => row["post_type"] == "post")   
 // // .select(row => transform(row))       
 // .asJSON()                             
-// .writeFileSync("dataSQL/posts-v1.1.json");       
+// .writeFileSync("dataSQL/posts-v1.0.json");       
 
 
 // ----------------------------------------------
@@ -53,26 +41,30 @@ const DF = require('data-forge-fs')
 // ----------------------------------------------
 
 //
-var attachments = DF.readFileSync("data/posts-v1.7-attachments.json").parseJSON()                         
-var posts = DF.readFileSync("data/posts-v1.6-posts.json").parseJSON()        
+var folders = DF.readFileSync("data/folders.json").parseJSON()                         
+var rels = DF.readFileSync("data/rel.csv").parseCSV()                         
+var articles = DF.readFileSync("data/articles.json").parseJSON()        
 
 
 function getIMG(id) {
-    return attachments.where(row => row["post_parent"] == id).toArray()
+    var ids = folders.toArray().map(d => d["term_id"])
+    return rels.toArray().filter(row => ids.includes(row["term_taxonomy_id"]) && row["object_id"] == id)
 } 
 
 // 
-posts.generateSeries((row, i) => {
+articles
+// .where(row => row["taxonomy"] == "category")
+// .dropSeries(["term_taxonomy_id", "taxonomy","description","parent","count"])
+.generateSeries((row, i) => {
 
     let list = getIMG(row["ID"])
 
     return ({
-        ...row,
-        img: list.length > 0  ? list[0]['guid'] : ""
+        folderID: list.length > 0  ? list[0]['term_taxonomy_id'] : ""
     })
 })
 .asJSON()                             
-.writeFileSync("dataSQL/posts-v1.8.json");       
+.writeFileSync("dataSQL/articles-1.json");       
 
 
-
+     
