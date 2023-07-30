@@ -23,14 +23,25 @@ const DF = require('data-forge-fs')
 // step (2)
 // ----------------------------------------------
 
-// DF.readFileSync("data/posts-v1.5-posts.json")      
-// .parseJSON()                
+DF.readFileSync("data/articles.json")      
+.parseJSON()                
 // .where(row => {
 //     return row["post_status"] !== "publish"
 // })   
-// // .select(row => transform(row))       
-// .asJSON()                             
-// .writeFileSync("dataSQL/posts-v1.6.json");      
+// .select(row => transform(row))                           
+.generateSeries((row, i) => {
+    
+    // var cc = row["content"].replaceAll(`\"`, `\\\'"`)
+
+    return ({ 
+        content: JSON.stringify({content: row["content"]}), 
+    })
+})   
+// .dropSeries([
+//     "guid", "ID", "post_date", "post_content", "post_title", "img"
+// ])       
+.asCSV()                             
+.writeFileSync("dataSQL/articles.csv");      
 
 
 
@@ -41,30 +52,30 @@ const DF = require('data-forge-fs')
 // ----------------------------------------------
 
 //
-var folders = DF.readFileSync("data/folders.json").parseJSON()                         
-var rels = DF.readFileSync("data/rel.csv").parseCSV()                         
-var articles = DF.readFileSync("data/articles.json").parseJSON()        
+// var folders = DF.readFileSync("data/folders.json").parseJSON()                         
+// var rels = DF.readFileSync("data/rel.csv").parseCSV()                         
+// var articles = DF.readFileSync("data/articles.json").parseJSON()        
 
 
-function getIMG(id) {
-    var ids = folders.toArray().map(d => d["term_id"])
-    return rels.toArray().filter(row => ids.includes(row["term_taxonomy_id"]) && row["object_id"] == id)
-} 
+// function getIMG(id) {
+//     var ids = folders.toArray().map(d => d["term_id"])
+//     return rels.toArray().filter(row => ids.includes(row["term_taxonomy_id"]) && row["object_id"] == id)
+// } 
 
-// 
-articles
-// .where(row => row["taxonomy"] == "category")
-// .dropSeries(["term_taxonomy_id", "taxonomy","description","parent","count"])
-.generateSeries((row, i) => {
+// // 
+// articles
+// // .where(row => row["taxonomy"] == "category")
+// // .dropSeries(["term_taxonomy_id", "taxonomy","description","parent","count"])
+// .generateSeries((row, i) => {
 
-    let list = getIMG(row["ID"])
+//     let list = getIMG(row["ID"])
 
-    return ({
-        folderID: list.length > 0  ? list[0]['term_taxonomy_id'] : ""
-    })
-})
-.asJSON()                             
-.writeFileSync("dataSQL/articles-1.json");       
+//     return ({
+//         folderID: list.length > 0  ? list[0]['term_taxonomy_id'] : ""
+//     })
+// })
+// .asJSON()                             
+// .writeFileSync("dataSQL/articles-1.json");       
 
 
      
